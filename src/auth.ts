@@ -13,12 +13,19 @@ export type AuthUser = DefaultSession["user"] & {
   scope: string;
   id: string;
   supabaseAccessToken?: string;
+  supabaseUserId?: string;
 };
 
 declare module "next-auth" {
   interface Session {
     user: AuthUser;
     error?: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    supabaseUserId?: string;
   }
 }
 
@@ -45,7 +52,12 @@ export const { handlers, auth } = NextAuth({
   }),
   session: { strategy: "jwt", maxAge: 7 * 24 * 60 * 60 },
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, user, trigger }) {
+      // Capture Supabase user ID during sign in
+      if (trigger === "signIn" && user?.id) {
+        token.supabaseUserId = user.id;
+      }
+
       if (token.sub) {
         token.supabaseAccessToken = createSupabaseToken(
           token.sub,
@@ -90,6 +102,7 @@ export const { handlers, auth } = NextAuth({
           refresh_token: token.refresh_token as string,
           scope: token.scope as string,
           id: token.id as string,
+          supabaseUserId: token.supabaseUserId,
           supabaseAccessToken: token.supabaseAccessToken as string | undefined,
         } as AuthUser,
         error: token.error as string | undefined,

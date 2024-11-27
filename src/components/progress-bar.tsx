@@ -61,9 +61,9 @@ export function ProgressBar({
   const progressPercentage = Math.min((progressMs / durationMs) * 100, 100);
 
   return (
-    <div className="mt-2 h-1 bg-zinc-700 rounded-full w-64">
+    <div className="mt-2 h-1 bg-secondary rounded-full">
       <div
-        className="h-1 bg-green-500 rounded-full transition-all duration-100 ease-linear"
+        className="h-1 bg-emerald-400 rounded-full transition-all duration-100 ease-linear"
         style={{
           width: `${progressPercentage}%`,
         }}

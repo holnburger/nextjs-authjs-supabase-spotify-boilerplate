@@ -1,6 +1,4 @@
-// components/spotify-player.tsx
 "use client";
-
 import Image from "next/image";
 import { useEffect } from "react";
 import {
@@ -13,6 +11,9 @@ import { useSpotifyStore } from "@/store/use-spotify-store";
 import { PlayButton } from "@/components/play-button";
 import { ProgressBar } from "@/components/progress-bar";
 import { AuthUser } from "@/auth";
+import { DevicePicker } from "@/components/device-picker";
+import { SpotifyVolume } from "@/components/volume-control";
+import { getSpotifyClient } from "@/utils/spotify";
 
 interface SpotifyPlayerProps {
   initialPlaybackState: PlaybackState | null;
@@ -28,46 +29,58 @@ export function SpotifyPlayer({
   user,
 }: SpotifyPlayerProps) {
   const setCurrentTrack = useSpotifyStore((state) => state.setCurrentTrack);
+  const currentTrack = useSpotifyStore((state) => state.currentTrack);
+  const spotifyClient = getSpotifyClient(user);
 
-  // Initialize store with current playback state
   useEffect(() => {
     if (initialPlaybackState) {
       setCurrentTrack(initialPlaybackState);
     }
   }, [initialPlaybackState, setCurrentTrack]);
 
-  const currentTrack = useSpotifyStore((state) => state.currentTrack);
-
   if (!currentTrack?.item || !isTrack(currentTrack.item)) {
     return null;
   }
 
   return (
-    <div className="mb-12 p-6 bg-zinc-800/50 rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">Now Playing</h2>
-      <div className="flex items-center gap-4">
-        <Image
-          src={currentTrack.item.album.images[0].url}
-          alt={currentTrack.item.album.name}
-          width={96}
-          height={96}
-          className="rounded-md"
-        />
-        <div>
-          <h3 className="text-xl font-semibold">{currentTrack.item.name}</h3>
-          <p className="text-zinc-400">
-            {currentTrack.item.artists
-              .map((artist: SimplifiedArtist) => artist.name)
-              .join(", ")}
-          </p>
-          <ProgressBar
-            progressMs={currentTrack.progress_ms}
-            durationMs={currentTrack.item.duration_ms}
-            trackId={currentTrack.item.id}
-            user={user}
-          />
+    <div className="p-4 relative">
+      <div className="mx-auto max-w-7xl flex flex-col">
+        <div className="flex flex-col items-center justify-between gap-4">
+          <div className="flex items-center gap-4 w-full flex-1">
+            <Image
+              src={currentTrack.item.album.images[0].url}
+              alt={currentTrack.item.album.name}
+              width={128}
+              height={128}
+              className="shadow-lg"
+            />
+            <div className="min-w-0 flex-1 relative">
+              <h2 className="font-semibold text-sm text-foreground truncate">
+                {currentTrack.item.name}
+              </h2>
+              <p className="text-sm text-muted-foreground truncate">
+                {currentTrack.item.artists
+                  .map((artist: SimplifiedArtist) => artist.name)
+                  .join(", ")}
+              </p>
+              <div className="w-full">
+                <ProgressBar
+                  progressMs={currentTrack.progress_ms}
+                  durationMs={currentTrack.item.duration_ms}
+                  trackId={currentTrack.item.id}
+                  user={user}
+                />
+              </div>
+            </div>
+            <div className="flex items-center">
+              <PlayButton trackId={currentTrack.item.id} user={user} />
+              <DevicePicker spotifyClient={spotifyClient} />
+            </div>
+          </div>
+          <div className="flex items-center justify-end w-full">
+            <SpotifyVolume spotifyClient={spotifyClient} />
+          </div>
         </div>
-        <PlayButton trackId={currentTrack.item.id} user={user} />
       </div>
     </div>
   );
