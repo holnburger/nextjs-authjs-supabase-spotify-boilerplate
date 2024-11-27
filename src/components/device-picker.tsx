@@ -78,7 +78,7 @@ export function DevicePicker({ spotifyClient }: DevicePickerProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="">
+      <DropdownMenuTrigger className="hover:bg-secondary p-3 rounded-md">
         {/* {getDeviceIcon(activeDevice?.type || "speaker")} */}
         <Speaker className="h-4 w-4" />
       </DropdownMenuTrigger>

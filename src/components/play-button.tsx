@@ -111,7 +111,6 @@ export function PlayButton({ trackId, user }: PlayButtonProps) {
       variant="ghost"
       size="icon"
       onClick={isThisTrackPlaying ? handlePause : handlePlay}
-      className="hover:bg-zinc-800"
       title={isThisTrackPlaying ? "Pause" : "Play"}
     >
       {isThisTrackPlaying ? (

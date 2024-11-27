@@ -1,6 +1,8 @@
 "use client";
+
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   SimplifiedArtist,
   Track,
@@ -14,6 +16,8 @@ import { AuthUser } from "@/auth";
 import { DevicePicker } from "@/components/device-picker";
 import { SpotifyVolume } from "@/components/volume-control";
 import { getSpotifyClient } from "@/utils/spotify";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface SpotifyPlayerProps {
   initialPlaybackState: PlaybackState | null;
@@ -28,6 +32,7 @@ export function SpotifyPlayer({
   initialPlaybackState,
   user,
 }: SpotifyPlayerProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const setCurrentTrack = useSpotifyStore((state) => state.setCurrentTrack);
   const currentTrack = useSpotifyStore((state) => state.currentTrack);
   const spotifyClient = getSpotifyClient(user);
@@ -44,9 +49,9 @@ export function SpotifyPlayer({
 
   return (
     <div className="p-4 relative">
-      <div className="mx-auto max-w-7xl flex flex-col">
-        <div className="flex flex-col items-center justify-between gap-4">
-          <div className="flex items-center gap-4 w-full flex-1">
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-4 w-full">
             <Image
               src={currentTrack.item.album.images[0].url}
               alt={currentTrack.item.album.name}
@@ -72,14 +77,56 @@ export function SpotifyPlayer({
                 />
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
               <PlayButton trackId={currentTrack.item.id} user={user} />
               <DevicePicker spotifyClient={spotifyClient} />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                <motion.div
+                  initial={false}
+                  animate={{ rotate: isOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </motion.div>
+              </Button>
             </div>
           </div>
-          <div className="flex items-center justify-end w-full">
-            <SpotifyVolume spotifyClient={spotifyClient} />
-          </div>
+
+          <AnimatePresence initial={false}>
+            {isOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{
+                  height: "auto",
+                  opacity: 1,
+                  transition: {
+                    height: { duration: 0.2 },
+                    opacity: { duration: 0.2, delay: 0.1 },
+                  },
+                }}
+                exit={{
+                  height: 0,
+                  opacity: 0,
+                  transition: {
+                    height: { duration: 0.2 },
+                    opacity: { duration: 0.1 },
+                  },
+                }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center justify-end w-full border-t pt-4 mt-2">
+                  <div className="flex items-center gap-4">
+                    <SpotifyVolume spotifyClient={spotifyClient} />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
